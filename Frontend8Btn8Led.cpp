@@ -51,10 +51,10 @@ void Frontend8Btn8Led::work() {
         Debug.println(F("lastState=%i newState=%i"), lastState[btn], newState);
 
         if (*_buttonCallbackFunc != NULL && (!lastState[btn] && newState == 1) /* rising state change required*/) {
-            SerialUSB.println("FORWARD");
+//            SerialUSB.println("FORWARD");
             _buttonCallbackFunc(btn);
         } else {
-            SerialUSB.println("IGNORE");
+//            SerialUSB.println("IGNORE");
         }
         lastState[btn] = newState;
         clearInterrupt();

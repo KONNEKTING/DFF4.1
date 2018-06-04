@@ -527,6 +527,9 @@ private:
      */
     bool isMoving();
     
+    bool isFullyOpened();
+    bool isFullyClosed();
+    
     /**
      * Keeps position in 0..1 range. If bigger, limit to 1, if smaller, limit to 0
      */

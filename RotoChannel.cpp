@@ -449,6 +449,12 @@ void RotoChannel::doOpen() {
      */
 
     Debug.println(F("[%i] doOpen() locked=%i"), _group, _lock);
+    
+    if (_initDone && isFullyOpened()) {
+        Debug.println(F("[%i] doOpen() already fully opened. just return."), _group);    
+        return;
+    }
+
     if (isMoving() && !_isStopping) {
         Debug.println(F("[%i] Stop moving first ..."), _group);
         doStop();
@@ -486,6 +492,12 @@ void RotoChannel::doOpen() {
 void RotoChannel::doClose() {
 
     Debug.println(F("[%i] doClose() locked=%i"), _group, _lock);
+    
+    if (_initDone && isFullyOpened()) {
+        Debug.println(F("[%i] doClose() already fully closed. just return."), _group);    
+        return;
+    }
+    
     // it's okay to trigger relais in unlocked, locking and unlocking state
     if (isMoving() && !_isStopping) {
         Debug.println(F("[%i] Stop moving first ..."), _group);
@@ -859,6 +871,34 @@ float RotoChannel::limitPos(float pos) {
  */
 bool RotoChannel::isWindow() {
     return _config.setting == OPTION_SETTINGS_WINDOW;
+}
+
+/**
+ * Check if window or shutter is fully opened
+ * @return 
+ */
+bool RotoChannel::isFullyOpened() {
+    if (isWindow() && _position==1.0f) { // window
+        return true;
+    } else if (!isWindow() && _position==0.0f){ // shutter
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Check if window or shutter is fully closed
+ * @return 
+ */
+bool RotoChannel::isFullyClosed() {
+    if (isWindow() && _position==0.0f) { // window
+        return true;
+    } else if (!isWindow() && _position==1.0f){ // shutter
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
