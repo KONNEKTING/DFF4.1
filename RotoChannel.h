@@ -53,11 +53,11 @@
 /**
  * The offset for comobj calculation.
  * 
- * f.i. group 0 has it's ComObj stating at index=8, then ComObjOffset is set to 8.
+ * f.i. group 0 has it's ComObj starting at index=8, then ComObjOffset is set to 8.
  * Depending on the group and offset, the Channel can calculate it's ComObj indizes itself.
  * So main-sketch just needs to forward all knxEvents to all channels and each channel filters out it's ComObj events.
  */
-#define COMOBJ_OFFSET 8
+#define COMOBJ_OFFSET 9
 #define COMOBJ_PER_CHANNEL 16
 
 /**

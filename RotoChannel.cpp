@@ -113,9 +113,10 @@ void RotoChannel::setConfig(ChannelConfig config) {
     _enabled = true;
 
     Debug.println(F("[%i] setConfig:\n"
+                            "\t_config.setting=%i \n"
                             "\t_config.runtimeRollover=%is \n"
                             "\t_config.runTimeOpen=%ims \n"
-                            "\t_config.runTimeClose=%ims"), _group, _config.runTimeRollover, getTime(_config.runTimeOpen), getTime(_config.runTimeClose));
+                            "\t_config.runTimeClose=%ims"), _group, _config.setting, _config.runTimeRollover, getTime(_config.runTimeOpen), getTime(_config.runTimeClose));
 
     _openStep = (100.0 / (getTime(_config.runTimeOpen))) / 100.0;
     _closeStep = (100.0 / (getTime(_config.runTimeClose))) / 100.0;
