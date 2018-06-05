@@ -1015,6 +1015,16 @@ bool RotoChannel::knxEvents(byte index) {
     if (!_enabled) {
         return false;
     }
+    
+    // return value: if ComObj get's consumed, no other channel will get it afterwards.
+    bool consumed = true;
+    
+    /*
+     * local helper index. mainly used to be able to apply central events to 
+     * specific comobjs without loosing the information from which comobj 
+     * the information is coming 
+     */
+    byte idx = index;
 
     // common comobjects
     switch (index) {
@@ -1085,54 +1095,62 @@ bool RotoChannel::knxEvents(byte index) {
         }
         
         // for remaining central objects, convert index to channelIndex --> just one implementation for central+channel!
+        // and do not consume the comobj --> let other handle this request too
         case (COMOBJ_centralWindowOpenClose):
             if (isWindow()) {
-                index = _baseIndex + COMOBJ_abOpenClose - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abOpenClose - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
 
         case (COMOBJ_centralWindowStop):
             if (isWindow()) {
-                index = _baseIndex + COMOBJ_abStop - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abStop - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
         case (COMOBJ_centralWindowAbsPosition):
             if (isWindow()) {
-                index = _baseIndex + COMOBJ_abAbsPosition - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abAbsPosition - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
         case (COMOBJ_centralShutterOpenClose):
             if (!isWindow()) {
-                index = _baseIndex + COMOBJ_abOpenClose - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abOpenClose - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
         case (COMOBJ_centralShutterStop):
             if (!isWindow()) {
-                index = _baseIndex + COMOBJ_abStop - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abStop - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
         case (COMOBJ_centralShutterAbsPosition):
             if (!isWindow()) {
-                index = _baseIndex + COMOBJ_abAbsPosition - COMOBJ_OFFSET;
+                idx = _baseIndex + COMOBJ_abAbsPosition - COMOBJ_OFFSET;
+                consumed = false;
             }
             break;
             
         case (COMOBJ_centralVentilation):
-            index = _baseIndex + COMOBJ_abVentilation - COMOBJ_OFFSET;
+            idx = _baseIndex + COMOBJ_abVentilation - COMOBJ_OFFSET;
+            consumed = false;
             break;
             
 
     }
 
     // check if index is relevant for this channel
-    if (index < _baseIndex || index > _baseIndex + COMOBJ_PER_CHANNEL) {
+    if (idx < _baseIndex || idx > _baseIndex + COMOBJ_PER_CHANNEL) {
         // nothing to do for this channel
         Debug.println(F("[%i] nothing to do: baseIndex=%i"), _group, _baseIndex);
         return false;
     }
 
     // calculate help-index for this channel
-    byte chIndex = index - _baseIndex;
+    byte chIndex = idx - _baseIndex;
     Debug.println(F("[%i] baseIndex=%i chIndex=%i"), _group, _baseIndex, chIndex);
     
     // channel specific comobjects
@@ -1143,7 +1161,7 @@ bool RotoChannel::knxEvents(byte index) {
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             byte value = Knx.read(index);
             if (value == DPT1_009_open) {
@@ -1153,41 +1171,41 @@ bool RotoChannel::knxEvents(byte index) {
                 Debug.println(F("[%i] close"), _group);
                 doClose();
             }
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abStop - COMOBJ_OFFSET):
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             byte value = Knx.read(index);
             Debug.println(F("[%i] doStop: %i"), _group, value);
             if (value == DPT1_010_stop) {
                 doStop();
             }
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abAbsPosition - COMOBJ_OFFSET):
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             byte value = Knx.read(index);
             float absPos = (value * (BYTE_PERCENT)) / 100.0f;
             Debug.println(F("[%i] absPos: %f"), _group, absPos);
             doPosition(absPos);
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abReference - COMOBJ_OFFSET):
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             byte value = Knx.read(index);
             if (value == DPT1_001_on) {
@@ -1196,14 +1214,14 @@ bool RotoChannel::knxEvents(byte index) {
                 _referenceRun = REF_START;
 
             }
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abDriveToPosition - COMOBJ_OFFSET):
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             if (_config.driveToPositionComObj == 0x00) {
                 Debug.println(F("[%i] drive to position comobj deactivated. Ignoring!"), _group);
@@ -1216,14 +1234,14 @@ bool RotoChannel::knxEvents(byte index) {
             } else {
                 Debug.println(F("[%i] drive to position: value=0 is not yet implemented. Ignoring!"), _group);
             }
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abVentilation - COMOBJ_OFFSET):
         {
             if (isLocked()) {
                 Debug.println(F("[%i] skipping comobj %i due to lock"), _group, chIndex);
-                return true;
+                return consumed;
             }
             if (isWindow()) {
                 byte value = Knx.read(index);
@@ -1243,7 +1261,7 @@ bool RotoChannel::knxEvents(byte index) {
             } else {
                 Debug.println(F("[%i] ignoring COMOBJ_abVentilation due to shutter!"), _group);
             }
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abWindAlarm - COMOBJ_OFFSET):
@@ -1254,7 +1272,7 @@ bool RotoChannel::knxEvents(byte index) {
              * TODO
              * Introduce param that controls what to do? Like with lock?
              */
-            return true;
+            return consumed;
         }
 
         case (COMOBJ_abRainAlarm - COMOBJ_OFFSET):
@@ -1266,7 +1284,7 @@ bool RotoChannel::knxEvents(byte index) {
              * - Introduce param that controls what to do? Like with lock?
              * - convert it to central comobj instead of channel comobj --> channel just decided via param how to react on wind/rain alarm
              */
-            return true;
+            return consumed;
         }
 
             // status com obj are "outgoing" comobjs.
