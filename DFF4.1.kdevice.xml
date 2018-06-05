@@ -374,7 +374,7 @@
             <CommObject Id="1" IdName="centralWindowOpenClose">
                 <Name>Zentrale Funktion</Name>
                 <Function>Fenster Auf/Zu</Function>
-                <DataPointType>1.007</DataPointType>
+                <DataPointType>1.009</DataPointType>
                 <Flags>42</Flags>
             </CommObject>
             <CommObject Id="2" IdName="centralWindowStop">
@@ -392,7 +392,7 @@
             <CommObject Id="4" IdName="centralShutterOpenClose">
                 <Name>Zentrale Funktion</Name>
                 <Function>Rolladen Auf/Zu</Function>
-                <DataPointType>1.007</DataPointType>
+                <DataPointType>1.009</DataPointType>
                 <Flags>42</Flags>
             </CommObject>
             <CommObject Id="5" IdName="centralShutterStop">
