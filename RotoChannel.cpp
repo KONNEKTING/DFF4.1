@@ -491,9 +491,9 @@ void RotoChannel::doOpen() {
 
 void RotoChannel::doClose() {
 
-    Debug.println(F("[%i] doClose() locked=%i"), _group, _lock);
+    Debug.println(F("[%i] doClose() locked=%i pos=%3.9f"), _group, _lock, _position);
     
-    if (_initDone && isFullyOpened()) {
+    if (_initDone && isFullyClosed()) {
         Debug.println(F("[%i] doClose() already fully closed. just return."), _group);    
         return;
     }
@@ -879,10 +879,13 @@ bool RotoChannel::isWindow() {
  */
 bool RotoChannel::isFullyOpened() {
     if (isWindow() && _position==1.0f) { // window
+        Debug.println(F("[%i] isFullyOpened() isWindows pos=%3.9f"), _group, _position);
         return true;
     } else if (!isWindow() && _position==0.0f){ // shutter
+        Debug.println(F("[%i] isFullyOpened() isShutter pos=%3.9f"), _group, _position);
         return true;
     } else {
+        Debug.println(F("[%i] isFullyOpened() else pos=%3.9f"), _group, _position);
         return false;
     }
 }
