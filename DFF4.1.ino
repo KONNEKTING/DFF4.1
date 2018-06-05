@@ -12,10 +12,10 @@
 #include "RotoChannel.h"
 #include "Memory.h"
 
-
 /* *****************************************************************************
    Defines
 */
+#define COMPILE_TIMESTAMP __DATE__ " " __TIME__
 
 // M0dularis+ uses "Serial1"
 #define KNX_SERIAL Serial1
@@ -141,7 +141,7 @@ void setup() {
   */
   Debug.setPrintStream(&SerialUSB);
 
-  Debug.println(F("Setup..."));
+  Debug.println(F("Setup... compiletime: %s"), COMPILE_TIMESTAMP);
 
   /*
      Set memory functions

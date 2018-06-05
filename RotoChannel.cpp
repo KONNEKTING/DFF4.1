@@ -318,7 +318,7 @@ void RotoChannel::workStatus() {
                 Debug.print(" COMOBJ_abStatusMovement=0", _group);
                 break;
             case 0x02:
-                // 2KO: Auffahrt + Zufahrt
+                // 2KO: Auffahrt + Zufahrt                
                 Knx.write(getComObjIndex(COMOBJ_abStatusMovementOpen), 0);
                 Knx.write(getComObjIndex(COMOBJ_abStatusMovementClose), 0);
                 Debug.print(" COMOBJ_abStatusMovement[Open|Close]=0", _group);
@@ -451,7 +451,7 @@ void RotoChannel::doOpen() {
 
     Debug.println(F("[%i] doOpen() locked=%i"), _group, _lock);
     
-    if (_initDone && isFullyOpened()) {
+    if (_initDone && _referenceRun!=REF_NONE && isFullyOpened()) {
         Debug.println(F("[%i] doOpen() already fully opened. just return."), _group);    
         return;
     }
@@ -494,7 +494,7 @@ void RotoChannel::doClose() {
 
     Debug.println(F("[%i] doClose() locked=%i pos=%3.9f"), _group, _lock, _position);
     
-    if (_initDone && isFullyClosed()) {
+    if (_initDone && _referenceRun!=REF_NONE && isFullyClosed()) {
         Debug.println(F("[%i] doClose() already fully closed. just return."), _group);    
         return;
     }
@@ -934,9 +934,17 @@ byte RotoChannel::getComObjIndex(byte COMOBJ_var) {
 
 /**
  * used by doOpen(), doClose() and doStop() to send one-time-status of movement 
+ * will send only when actually start moving. end-events are handled by workStatus()
  */
 void RotoChannel::sendMovementStatus() {
+    
+    if (_isStopping) {
+        Debug.println(F("[%i] sendMovementStatus() skipping, due to stopping"), _group);
+        return;
+    }
+    
     if (_config.runStatusPositionComObj != 0x00) {
+        Debug.println(F("[%i] sendMovementStatus() COMOBJ_abStatusMovementDirection"), _group);
         switch (_moveStatus) {
             case MS_OPENING:
                 Knx.write(getComObjIndex(COMOBJ_abStatusMovementDirection), isWindow() ? DPT1_008_down : DPT1_008_up);
@@ -958,15 +966,18 @@ void RotoChannel::sendMovementStatus() {
             case 0x01:
                 // 1KO: Verfahrstatus
                 Knx.write(getComObjIndex(COMOBJ_abStatusMovement), 1);
+                Debug.println(F("[%i] sendMovementStatus() COMOBJ_abStatusMovement=1"), _group);
                 break;
             case 0x02:
                 // 2KO: Auffahrt + Zufahrt
                 switch (_moveStatus) {
                     case MS_OPENING:
                         Knx.write(getComObjIndex(COMOBJ_abStatusMovementOpen), 1);
+                        Debug.println(F("[%i] sendMovementStatus() COMOBJ_abStatusMovementOpen=1"), _group);
                         break;
                     case MS_CLOSING:
                         Knx.write(getComObjIndex(COMOBJ_abStatusMovementClose), 1);
+                        Debug.println(F("[%i] sendMovementStatus() COMOBJ_abStatusMovementClose=1"), _group);
                         break;
                     case MS_STOP:
                     default:

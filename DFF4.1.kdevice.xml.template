@@ -418,8 +418,7 @@
                 <Function>Lüften</Function>
                 <DataPointType>1.001</DataPointType>
                 <Flags>42</Flags>
-            </CommObject>
-            
+            </CommObject>           
             
             <CommObject Id="{Cx}" IdName="abOpenClose">
                 <Name>Kanal 1 (A+B)</Name>
