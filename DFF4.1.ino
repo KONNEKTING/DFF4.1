@@ -61,7 +61,7 @@
 #define SHUTTER_CLOSE_TIME 26 //sec
 
 // just for testing
-#define WAIT_FOR_MONITOR 1
+//#define WAIT_FOR_MONITOR 1
 //#define PROG_LED_HEARTBEAT 1
 #ifdef PROG_LED_HEARTBEAT
 int last = millis();
