@@ -300,11 +300,11 @@ void RotoChannel::work() {
  * Send status updates, if required
  */
 void RotoChannel::workStatus() {
+
     // if locked, just don't send any updates, we're locked!
     if (_lock == LCK_LOCKED) {
         return;
     }
-
 
     if (isJustStopped()) {
         Debug.print("[%i] STATUS just stopped: [", _group);
@@ -364,7 +364,8 @@ void RotoChannel::workStatus() {
         return;
     }
 
-    // current position is located in idfferent variables, depending on move-status
+    // current position is located in different variables, depending on move-status
+    Debug.println("[%i] isMoving?=%i _newPos=%f _pos=%f", _group, isMoving(), _newPosition, _position);
     float currPos = isMoving() ? _newPosition : _position;
 
     uint8_t positionValueToSend = currPos * 255; // map 0..100% to 0..255 unsigned byte
@@ -560,7 +561,6 @@ void RotoChannel::doStop() {
     _moveStatus = MS_STOP;
     //_startMoveMillis = NOT_DEFINED;
     _isStopping = false;
-
 }
 
 /**
@@ -635,7 +635,7 @@ void RotoChannel::workLEDs() {
 
 void RotoChannel::workPosition() {
 
-//#define DEBUG_UPDATE_STATUS    
+#define DEBUG_UPDATE_STATUS    
 
     /*
      * Es gibt die folgenden Fälle:
@@ -807,19 +807,25 @@ void RotoChannel::workPosition() {
 
     }
 
-
-    // if we just stopped NOW ...
-    //if (_lastMoveStatus != MS_STOP && _moveStatus == MS_STOP) {    
+    // if we need to stop ...
     if (_lastMoveStatus != MS_STOP && needStop) {
         
-        doStop();
+        doStop(); // actually do the stop
 
         // apply position
         _position = _newPosition;
         _startMoveMillis = NOT_DEFINED;
         
-        Debug.println(F("[%i] Finally on position %3.9f [locked=%s]"), _group, _position, isLocked()?"true":"false");
+        Debug.println(F("[%i] Finally stopping on position %3.9f [locked=%s]"), _group, _position, isLocked()?"true":"false");
 
+    } else 
+    // or if we just reached stop
+    if (_lastMoveStatus!= MS_STOP && _moveStatus == MS_STOP) {
+
+        _position = _newPosition;
+        _startMoveMillis = NOT_DEFINED;
+        
+        Debug.println(F("[%i] Finally stopped on position %3.9f [locked=%s]"), _group, _position, isLocked()?"true":"false");
     }
 
 

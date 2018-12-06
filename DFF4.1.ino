@@ -3,7 +3,7 @@
 */
 #include <Arduino.h>
 #include <Wire.h>
-#include <KonnektingDevice.h> // http://librarymanager/All#KONNEKTING Version 1.0.0-beta4a
+#include <KonnektingDevice.h> // http://librarymanager/All#KONNEKTING Version 1.0.0-beta4b
 #include <Adafruit_MCP23017.h> // http://librarymanager/All#Adafruit_MCP23017 Version 1.0.3
 #include <SerialFlash.h> // http://librarymanager/All#SerialFlash Version 0.5.0
 #include "kdevice_DFF_4.1.h"
